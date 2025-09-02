@@ -35,6 +35,10 @@ For other components wanting to use this workflow, see the comprehensive [User C
 3. **Execute the 4-phase workflow** following the prompts
 4. **Total execution time**: 4 minutes standard mode
 
+### Demo: 
+ 1. [Assisted_E2E_Debug_Run.mov](https://drive.google.com/file/d/1vCsI2Z-f6EQkF4eNqyUlsDJln-gAI9t7/view?usp=drive_link) 
+ 2. 
+
 ## 📋 Overview
 
 ### Core Features
