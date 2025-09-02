@@ -1,6 +1,6 @@
 # Test Case Generation Workflow
 
-An AI-powered system for generating comprehensive test cases for OpenShift components, specifically Hive and Cloud Credential Operator (CCO). The system uses a 4-phase workflow engine to automatically generate test documentation and E2E test code from JIRA tickets.
+An AI-powered system for generating comprehensive test cases for Hive and Cloud Credential Operator (CCO) now. The system uses a 4-phase workflow engine to automatically generate test documentation and E2E test code from JIRA tickets.
 
 ## 📋 Prerequisites
 
@@ -33,7 +33,7 @@ For other components wanting to use this workflow, see the comprehensive [User C
 
 2. **Provide a JIRA ticket key** (e.g., `HIVE-2883`, `CCO-1234`)
 3. **Execute the 4-phase workflow** following the prompts
-4. **Total execution time**: 4 minutes (240 seconds) standard mode, 90 seconds (1.5 minutes) fast mode
+4. **Total execution time**: 4 minutes standard mode
 
 ## 📋 Overview
 
@@ -321,67 +321,19 @@ agent_rules:
 - [ ] Both complete within 150 seconds
 - [ ] No inter-phase waiting time
 
-## 🚨 Troubleshooting
-
-### Common Issues
-
-1. **Timeout Errors**: Check network connectivity to JIRA/DeepWiki
-2. **Missing Components**: Verify component detection in `config/components.yaml`
-3. **Rule Loading Failures**: Check rule file paths and permissions
-4. **Parallel Execution Issues**: Verify dependency resolution
-
-### Performance Tuning
-
-- **Memory**: Increase from 2GB (fast mode) or 4GB (standard mode) if processing large JIRA tickets
-- **CPU**: Scale up from 4-8 cores for faster parallel execution
-- **Timeouts**: Adjust phase timeouts based on network conditions
-- **Caching**: Tune TTL values for better performance
-
-## 📊 Performance Metrics
-
-### Target Performance
-- **Phase 1**: 45-60 seconds (JIRA data retrieval)
-- **Phase 2**: 30-45 seconds (Strategy analysis)
-- **Phase 3&4**: 90-150 seconds (Parallel execution)
-- **Total**: 165-255 seconds (15-45 second buffer)
-
-### Optimization Features
-- **50% speed improvement** through parallel execution
-- **Aggressive caching** for repeated operations
-- **Resource prioritization** for critical path phases
-- **Error fast-fail** to avoid time waste
-
 ## 📝 Development
 
 ### Adding New Components
-
-1. **Follow the [User Configuration Guide](USER_CONFIGURATION_GUIDE.md)** for detailed step-by-step instructions
-2. Update `config/components.yaml` with component definition
-3. Create component-specific rules in `config/rules/{COMPONENT}-rules/`
-4. Add examples in `config/examples/{COMPONENT}-examples/`
-5. Test with sample JIRA ticket
-5. 📖 参考 [USER_CONFIGURATION_GUIDE.md](USER_CONFIGURATION_GUIDE.md) 获取详细的组件配置说明
+1. Update `config/components.yaml` with component definition
+2. Create component-specific rules in `config/rules/{COMPONENT}-rules/`
+3. Add examples in `config/examples/{COMPONENT}-examples/`
+4. Test with sample JIRA ticket
 
 ### Modifying Workflow
-
 1. Update `config/test_case_generation_workflow.yaml`
 2. Modify agent configurations in `config/agents/`
 3. Update component rules as needed
 4. Test end-to-end execution
-
-### Custom Agent Development
-
-1. Use existing configurations as templates
-2. Define clear input/output contracts
-3. Set appropriate timeouts (60s per phase)
-4. Include error handling and fallback strategies
-
-## 🔒 Security & Safety
-
-- **No sensitive data exposure** in generated outputs
-- **Safe file operations** with path validation
-- **Component isolation** through rule-based access
-- **Audit trail** through comprehensive logging
 
 ## 📚 Related Documentation
 
@@ -393,9 +345,7 @@ agent_rules:
 - `CLAUDE.md` - Project instructions for Claude Code
 
 ## 🤝 Contributing
-
 1. Follow existing configuration patterns
 2. Test with sample JIRA tickets
 3. Update documentation for new features
-4. Maintain backward compatibility
-5. Ensure all phases execute within time limit# test-generation-assistant
+4. Maintain backward compatibility# test-generation-assistant

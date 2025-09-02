@@ -1,0 +1,39 @@
+# Unified Component Configuration
+# Combines component config and mapping engine for simplified management
+
+# Global Configuration
+kubeconfig_path: "/Users/mihuang/Downloads/kubeconfig"
+
+components:
+  # Component Definitions
+  hive:
+    name: "Hive"
+    repository: "openshift/hive"
+    rules_path: "config/rules/hive-rules/"
+    examples_path: "config/examples/hive-examples/"
+    
+  cco:
+    name: "Cloud Credential Operator"
+    repository: "openshift/cloud-credential-operator"
+    rules_path: "config/rules/cco-rules/"
+    examples_path: "config/examples/cco-examples/"
+
+# Component Detection
+component_detection:
+  jira_to_component:
+    HIVE: "hive"
+    CCO: "cco"
+    OCPBUGS: "auto-detect"  # Auto-detect from JIRA component field
+
+  auto_detection:
+    enabled: true
+    fallback: "hive"
+    
+    # Fast component field mapping
+    component_field_mapping:
+      "Cloud Credential Operator": "cco"
+      "Hive": "hive"
+      "cluster-api": "hive"
+      "installer": "hive"
+
+

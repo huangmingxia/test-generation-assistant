@@ -1,0 +1,29 @@
+phase: "requirements_gathering"
+output_file: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
+
+jira_issue:
+  key: "{JIRA_KEY}"
+  title: "{ISSUE_TITLE}"
+  type: "{ISSUE_TYPE}"
+  component: "{COMPONENT}"
+  summary: "{ISSUE_SUMMARY}"
+
+test_checkpoints:
+  - "{CHECKPOINT_1}"
+  - "{CHECKPOINT_2}"
+
+target_platforms:
+  - "{PLATFORM_1}"
+  - "{PLATFORM_2}"
+
+test_scope:
+  in_scope:
+    - "{IN_SCOPE_1}"
+    - "{IN_SCOPE_2}"
+  out_of_scope:
+    - "{OUT_OF_SCOPE_1}"
+    - "{OUT_OF_SCOPE_2}"
+
+dependencies:
+  - "{DEPENDENCY_1}"
+  - "{DEPENDENCY_2}"

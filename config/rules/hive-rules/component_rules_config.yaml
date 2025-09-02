@@ -1,0 +1,41 @@
+# Hive Component Rules Configuration
+
+component: "hive"
+jira_prefix: "HIVE"
+
+# E2E Repository Configuration
+e2e_type: "test_private" # or component_repo
+
+e2e_repositories:
+  test_private:
+    name: "openshift-tests-private"
+    location: "/Users/mihuang/auto-test-case/openshift-tests-private"
+    url: "https://github.com/openshift/openshift-tests-private.git"
+    type: "shared"
+    target_dir: "test/extended/cluster_operator/hive/"
+    test_data_dir: "test/extended/testdata/cluster_operator/hive/"
+
+  component_repo:
+    name: "hive"
+    location: "/Users/mihuang/auto-test-case/hive"
+    url: "https://github.com/openshift/hive.git"
+    type: "component"
+    target_dir: "test/e2e/"
+    test_data_dir: "test/e2e/extend/"
+
+
+# Agent to rules mapping
+agent_rules:
+  requirements_gathering: []
+  test_strategy_analysis:
+    - "test_type_selection_criteria.yaml"
+  test_case_generation: []
+  e2e_test_generation:
+    - "../common/universal_e2e_pattern_learning.yaml"
+    - "e2e_mandatory_steps.yaml"
+    - "e2e_test_case_guidelines.md"
+  e2e_validator_integrator: []
+  environment_checker: []
+  e2e_test_runner: []
+  test_result_analyzer: []
+  test-executor: []

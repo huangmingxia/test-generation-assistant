@@ -1,0 +1,62 @@
+agent:
+  name: "e2e_test_generation"
+  display_name: "E2E Test Generator"
+  description: "Generate and integrate E2E tests into openshift-tests-private for {jira_issue_key}"
+
+role:
+  title: "E2E Test Generator"
+  specialization: "E2E test generation for openshift-tests-private"
+  responsibility: "Generate compat-based tests inside openshift-tests-private repo"
+
+task:
+  primary_goal: "Generate E2E test case in openshift-tests-private and validate integration"
+  execution_mode: "sequential_subtasks"
+
+  subtasks:
+    - name: "Git Branch Setup"
+      timeout: "40s"
+      input_requirements: ["jira_issue_key", "component"]
+      steps:
+        - "Load component configuration from config/rules/{COMPONENT}-rules/component_rules_config.yaml"
+        - "Determine E2E repository type from e2e_type (test_private or component_repo)"
+        - "Resolve repository location: {e2e_repositories[e2e_type].location}"
+        - "Check if local repository exists at resolved location"
+        - "If not: git clone {e2e_repositories[e2e_type].url} {e2e_repositories[e2e_type].location}"
+        - "cd into resolved repository location"
+        - "Check git status and branch"
+        - "Create or checkout branch: ai-case-design-{JIRA_KEY}"
+        - "Ensure working directory is clean and ready"
+      success_criteria:
+        - "Correct repository loaded from config"
+        - "Branch ai-case-design-{JIRA_KEY} ready for development"
+        - "Repository is in clean state"
+
+    - name: "E2E Test Case Generation"
+      timeout: "120s"
+      input_requirements: ["requirements_input", "test_strategy_input", "component"]
+      steps:
+        - "Load component configuration from config/rules/{COMPONENT}-rules/component_rules_config.yaml"
+        - "Load agent rules from component_rules_config.yaml → agent_rules.e2e_test_generation"
+        - "Analyze existing test cases in target repository to learn current testing framework and patterns"
+        - "Understand test requirements from requirements_input and test_strategy_input"
+        - "Combine learned patterns, rules, and test requirements to generate test logic and structure, write/update the appropriate test file in the repo"
+      success_criteria:
+        - "Go test file updated in private repo following compat patterns"
+        - "Test logic matches rules and requirements"
+
+    - name: "Syntax Validation"
+      timeout: "60s"
+      input_requirements: ["component"]
+      steps:
+        - "Load component configuration from config/rules/{COMPONENT}-rules/component_rules_config.yaml"
+        - "If e2e_type == 'test_private':"
+        - "  Run 'make all' to validate compilation and formatting in private repo"
+        - "If e2e_type == 'component_repo':"
+        - "  Run 'make verify' to validate compilation, formatting, and tests in component repo"
+        - "Check output for errors (syntax, imports, formatting)"
+        - "If errors detected:"
+        - "  Attempt to automatically fix common issues (missing imports, formatting via go fmt, minor syntax corrections)"
+        - "  Re-run the appropriate validation command for the repo type"
+        - "  If still failing, log errors and stop for manual intervention"
+      success_criteria:
+        - "Compilation and verification OK after fixes, or errors documented for manual review"

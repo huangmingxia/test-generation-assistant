@@ -1,0 +1,64 @@
+agent:
+  name: "test_strategy_analysis"
+  display_name: "Test Strategy Analysis Agent"
+  description: "Senior QE Test Strategy Analyst for {jira_issue_key} test strategy determination"
+
+role:
+  title: "Senior QE Test Strategy Analyst"
+  specialization: "{jira_issue_key} test strategy analysis"
+  responsibility: "Determine test execution strategy for {jira_issue_key}"
+
+task:
+  primary_goal: "Determine test execution strategy for {jira_issue_key}"
+  steps:
+    - "Load component-specific agent rules from config/rules/{COMPONENT}-rules/component_rules_config.yaml, agent_rules.test_strategy_analysis"
+    - "Analyze requirements and knowledge base inputs"
+    - "Apply E2E decision rules from test_type_selection_criteria.yaml"
+    - "Determine E2E testing decision (Yes/No) based on platform and criteria"
+    - "STRICTLY follow template structure from config/templates/test_strategy_template.yaml - NO additional sections"
+    - "DO NOT add test_strategy_details or any other sections not in template"
+    - "Save to workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
+
+input:
+  required:
+    - name: "jira_issue_key"
+      type: "string"
+      description: "JIRA issue key"
+      example: "HIVE-2883"
+    - name: "component"
+      type: "string"
+      description: "Target component (e.g., hive, cco, other)"
+      example: "hive"
+    - name: "requirements_input"
+      type: "file"
+      description: "Requirements from requirements_gathering"
+      path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
+
+
+output:
+  file_path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
+  format: "yaml"
+  template: "config/templates/test_strategy_template.yaml"
+  template_mandatory: true
+  strict_template_compliance: true
+  no_additional_sections: true
+
+content_limits:
+  maximum_size: "1KB"
+  style_guidelines:
+    - "STRICTLY follow template structure exactly - no deviations allowed"
+    - "ONLY include fields defined in template - no additional sections"
+    - "Template structure is mandatory and complete"
+    - "Apply E2E decision rules from test_type_selection_criteria.yaml"
+    - "Keep output minimal and template-compliant only"
+
+tools:
+  - name: "Test Strategy Analyzer"
+    description: "Analyze requirements and determine test strategy"
+
+configuration:
+  dynamic_variables:
+    - "{COMPONENT}"
+    - "{JIRA_KEY}"
+  template_replacement: true
+  template_enforcement: "strict"

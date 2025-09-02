@@ -1,0 +1,6 @@
+# Claude AI Assistant
+.claude/
+.claude-ai/
+
+# Workflow outputs (consider if you want to track these)
+workflow_outputs/

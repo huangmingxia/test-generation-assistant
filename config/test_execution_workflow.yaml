@@ -1,0 +1,233 @@
+# Test Execution Workflow Configuration
+# Dedicated workflow engine for executing tests only
+
+workflow:
+  name: "test_execution"
+  version: "1.0"
+  description: "Dedicated workflow for test execution using generated test cases"
+  target_execution_time: "15 minutes"
+  total_timeout: 900
+
+# Input Requirements
+input_requirements:
+  prerequisite_workflow: "test_case_generation"
+  required_inputs:
+    - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
+    - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
+    - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_test_case.md"
+    - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_e2e_test_results.md"
+
+# Workflow Phases for Test Execution
+phases:
+  phase_1:
+    name: "environment_verification"
+    agent: "environment_checker"
+    description: "Verify test environment and prerequisites"
+    execution_order: 1
+    dependencies: []
+    timeout: 60
+    critical_path: true
+    
+    execution_logic:
+      steps:
+        - step: "load_agent_config"
+          action: "load_agent_config"
+          config_file: "config/agents/environment_checker.yaml"
+        - step: "validate_prerequisites"
+          action: "validate_test_case_generation_outputs"
+          required_files:
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_test_case.md"
+        - step: "check_environment"
+          action: "execute_agent"
+          tools: ["cluster_connection", "component_status", "resource_availability"]
+          output_format: "yaml"
+        - step: "save_output"
+          action: "save_to_file"
+          path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/environment_check_results.yaml"
+
+  phase_2:
+    name: "e2e_test_execution"
+    agent: "e2e_test_runner"
+    description: "Execute E2E tests in target environment"
+    execution_order: 2
+    dependencies: ["phase_1"]
+    timeout: 480
+    critical_path: true
+    
+    execution_logic:
+      steps:
+        - step: "wait_for_dependencies"
+          action: "wait_for_phase"
+          wait_for: "phase_1"
+          timeout: 10
+        - step: "load_agent_config"
+          action: "load_agent_config"
+          config_file: "config/agents/e2e_test_runner.yaml"
+        - step: "load_test_inputs"
+          action: "load_phase_outputs"
+          inputs:
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_e2e_test_results.md"
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/environment_check_results.yaml"
+        - step: "execute_e2e_tests"
+          action: "execute_agent"
+          tools: ["e2e_repository", "test_runner", "validation_checker"]
+          output_format: "mixed"
+        - step: "save_execution_logs"
+          action: "save_multiple_files"
+          paths:
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/e2e_execution_log.txt"
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/e2e_test_results.xml"
+
+  phase_3:
+    name: "manual_test_guidance"
+    agent: "test_case_generation"
+    description: "Provide manual test execution guidance"
+    execution_order: 3
+    dependencies: ["phase_1"]
+    parallel_with: ["phase_2"]
+    timeout: 120
+    
+    execution_logic:
+      steps:
+        - step: "load_manual_test_cases"
+          action: "load_phase_outputs"
+          inputs:
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_test_case.md"
+        - step: "prepare_manual_execution"
+          action: "execute_agent"
+          tools: ["manual_test_preparation", "environment_setup"]
+          output_format: "markdown"
+        - step: "save_manual_guidance"
+          action: "save_to_file"
+          path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/manual_test_guidance.md"
+
+  phase_4:
+    name: "test_result_analysis"
+    agent: "test_result_analyzer"
+    description: "Analyze test execution results and generate reports"
+    execution_order: 4
+    dependencies: ["phase_2", "phase_3"]
+    timeout: 180
+    
+    execution_logic:
+      steps:
+        - step: "wait_for_dependencies"
+          action: "wait_for_phase"
+          wait_for: ["phase_2", "phase_3"]
+          timeout: 15
+        - step: "load_agent_config"
+          action: "load_agent_config"
+          config_file: "config/agents/test_result_analyzer.yaml"
+        - step: "load_execution_results"
+          action: "load_phase_outputs"
+          inputs:
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/e2e_execution_log.txt"
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/e2e_test_results.xml"
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/manual_test_guidance.md"
+        - step: "analyze_results"
+          action: "execute_agent"
+          tools: ["result_parser", "failure_analyzer", "recommendation_engine"]
+          output_format: "mixed"
+        - step: "generate_final_report"
+          action: "save_multiple_files"
+          paths:
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/{JIRA_KEY}_execution_report.md"
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/{JIRA_KEY}_test_summary.yaml"
+
+# Execution Strategy for Test Execution
+execution_strategy:
+  parallel:
+    enabled: true
+    max_concurrent_phases: 2
+    dependency_resolution: "strict"
+    
+  environment_specific:
+    cluster_required: true
+    resource_intensive: true
+    isolation_required: true
+    
+  failure_handling:
+    continue_on_non_critical_failure: true
+    critical_phases: ["phase_1", "phase_2"]
+    retry_failed_tests: true
+    max_test_retries: 2
+
+# Performance Configuration
+performance:
+  resources:
+    memory_limit: "8GB"
+    cpu_limit: "16 cores"
+    disk_space: "50GB"
+    priority_allocation: "execution_focused"
+    
+  timeouts:
+    individual_test_timeout: 300
+    test_suite_timeout: 1200
+    environment_setup_timeout: 180
+    
+  error_handling:
+    retry_on_failure: true
+    max_retries: 3
+    test_isolation: true
+    cleanup_on_failure: true
+
+# Integration Configuration
+integration:
+  cluster:
+    kubeconfig_path: "global_config"
+    connection_validation: true
+    resource_monitoring: true
+    
+  test_repository:
+    e2e_repository_location: "global_kubeconfig_path"
+    branch_management: true
+    test_execution_tracking: true
+    
+  reporting:
+    junit_xml_generation: true
+    log_aggregation: true
+    screenshot_capture: true
+    failure_diagnostics: true
+
+# Output Management
+output_management:
+  base_directory: "workflow_outputs"
+  structure:
+    pattern: "{COMPONENT}/{JIRA_KEY}/"
+    subdirectories:
+      - "test_execution_results"
+      - "logs"
+      - "reports"
+      - "artifacts"
+  
+  artifact_collection:
+    test_logs: true
+    screenshots: true
+    cluster_state_dumps: true
+    performance_metrics: true
+    
+  retention:
+    execution_logs: "30 days"
+    test_artifacts: "7 days"
+    summary_reports: "90 days"
+
+# Test Categories
+test_execution_types:
+  e2e_tests:
+    enabled: true
+    priority: "high"
+    parallel_execution: false
+    
+  manual_tests:
+    enabled: true
+    priority: "medium"
+    guidance_only: true
+    
+  integration_tests:
+    enabled: false
+    priority: "low"
+    
+  performance_tests:
+    enabled: false
+    priority: "low"

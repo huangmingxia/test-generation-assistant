@@ -1,0 +1,18 @@
+phase: "test_strategy_analysis"
+output_file: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
+
+jira_issue:
+  key: "{JIRA_KEY}"
+  component: "{COMPONENT}"
+
+e2e_decision:
+  required: "{YES_NO}"
+  reasoning: "{REASONING}"
+  rules_applied:
+    - rule_source: "test_type_selection_criteria.yaml"
+      criteria: "{PLATFORM_SPECIFIC_CRITERIA}"
+      decision: "{YES_NO}"
+
+execution_plan:
+  phase_3: "Generate test cases (always)"
+  phase_4: "Generate E2E tests (only if e2e_decision.required = YES)"

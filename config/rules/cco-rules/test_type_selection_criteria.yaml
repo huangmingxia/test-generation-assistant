@@ -1,0 +1,44 @@
+test_type_selection_criteria:
+  e2e_decision_rule:
+    description: "CCO test type selection: functional testing gets E2E, new cluster installation does not"
+    default: "manual testing"
+    
+    # New cluster installation - No E2E tests (requires new CI pipeline)
+    no_e2e_scenarios:
+      - "New cloud provider platform installation"
+      - "New cluster deployment configuration"
+      - "New installer integration"
+      - "First-time platform support"
+      - "Beta/experimental cluster types"
+      - "Custom installation workflows"
+      - "New infrastructure provisioning"
+      - "Platform CI pipeline creation"
+      - "Infrastructure setup automation"
+    
+    # Functional testing - Add E2E tests (fits existing CI)
+    e2e_scenarios:
+      - "Credential request functionality"
+      - "Credential rotation operations"
+      - "Multi-cloud credential management"
+      - "Existing platform credential operations"
+      - "CCO operator functionality"
+      - "API validation and testing"
+      - "Day-2 operations"
+      - "Feature regression testing"
+      - "Bug fix validation"
+      - "ccoctl command functionality"
+      - "Authentication workflow testing"
+      - "Permission validation"
+    
+    decision_logic:
+      installation_related: "manual testing"  # Installation related -> manual testing (avoid CI complexity)
+      functional_testing: "E2E testing (automated)"  # Functional testing -> E2E testing
+      bug_fixes: "E2E testing (automated)"  # Bug fixes -> E2E testing
+      new_features: "E2E testing (automated)"  # New features -> E2E testing
+      ci_pipeline_needed: "manual testing"  # Need new CI pipeline -> manual testing
+    
+    reasoning:
+      no_e2e_for_installation: "New cluster installation requires new CI pipelines, infrastructure setup, and complex automation"
+      e2e_for_functionality: "Functional testing fits existing CI framework and focuses on feature validation"
+    
+    fallback: "manual testing"  # Default conservative strategy
