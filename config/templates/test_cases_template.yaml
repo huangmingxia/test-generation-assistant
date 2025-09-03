@@ -19,10 +19,10 @@
 {PREREQUISITES_1}
 
 #### Test Steps
-1. **Action:** {ACTION_1}  
+1. **Action:** {ACTION_1}    
    **Expected:** {EXPECTED_1}
 
-2. **Action:** {ACTION_2}  
+2. **Action:** {ACTION_2}    
    **Expected:** {EXPECTED_2}
 
 ### Test Case {JIRA_KEY}_002
@@ -35,11 +35,11 @@
 {PREREQUISITES_2}
 
 #### Test Steps
-1. **Action:** {ACTION_1}  
-   **Expected:** {EXPECTED_1}
+1. **Action:** {ACTION_1}    
+   **Expected:** {EXPECTED_1}  
 
-2. **Action:** {ACTION_2}  
-   **Expected:** {EXPECTED_2}
+2. **Action:** {ACTION_2}    
+   **Expected:** {EXPECTED_2}  
 
 ---
-*Generated from Polarion XML template*
+*Generated from Markdown template*

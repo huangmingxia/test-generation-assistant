@@ -1,0 +1,43 @@
+# Test Case Generation Rules - Hive Specific Configuration
+
+## Hive Repository Context (MANDATORY)
+
+### **CRITICAL: Hive Repository Context Understanding**
+⚠️ **Current Working Directory**: `.ai_testgen/` or `ai_testgen/`(AI test generation workspace WITHIN Hive repository)
+📁 **Analysis Target**: **Hive product source code** at `../` (parent directory - the Hive repository root)
+📝 **Test Generation Target**: `temp_repos/openshift-tests-private/` (private E2E test repository)
+
+**Key Distinction**:
+- **Product Code**: What we ANALYZE - Hive source code at `../` (we are INSIDE the Hive repository)
+- **Test Code**: Where we WRITE E2E tests (`openshift-tests-private`) - private test repository
+- **DeepWiki**: Alternative source for Hive architecture analysis (but local code is preferred)
+
+#### **MANDATORY: Hive Repository Context Check**
+```bash
+# Verify we are inside Hive product repository
+pwd  # Should be in ai_testgen/ or .ai_testgen/ subdirectory
+cat ../go.mod | head -1  # Should show "module github.com/openshift/hive"
+
+# Check Hive source code availability
+ls -la ../ | grep -E "(go\.mod|Makefile|pkg|cmd)" | head -5
+```
+
+## Hive-Specific Analysis Strategy
+
+### **Primary Strategy - Hive Local Repository Analysis**:
+**Technical Implementation Analysis**:
+- Navigate: `cd ../` (Hive repository root)
+- Search Hive code: `grep -r "FeatureName" ../pkg/ ../cmd/`
+- Find controllers: `find .. -name "*controller*" -type f`
+- Read relevant source files directly for latest implementation details from Hive codebase
+
+## Hive-Specific Test Environment Requirements
+
+### **DNSZone Test Environment Requirements**
+- **Managed DNS Cluster**: DNSZone tests require managed DNS cluster setup
+
+## Hive-Specific Implementation Details
+
+### **Hive Module Information**
+- **Module Name**: `github.com/openshift/hive`
+- **Repository Type**: OpenShift Hive operator for cluster management

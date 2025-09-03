@@ -1,10 +1,20 @@
-# Test Case Generation Workflow
+# 🧪 Test Generation Assistant
 
-An AI-powered system for generating comprehensive test cases for Hive and Cloud Credential Operator (CCO) now. The system uses a 4-phase workflow engine to automatically generate test documentation and E2E test code from JIRA tickets.
+## 🎯 Overview
+
+AI-assisted test generation and execution system that automates the complete testing workflow:
+
+- **Test Case Generation**: Generate comprehensive test cases from JIRA tickets
+- **E2E Test Code Generation**: Create executable E2E test code
+- **Test Execution**: Run E2E tests and capture results
+- **PR Submission**: Automatically create pull requests for generated test code
+- **JIRA Integration**: Update JIRA tickets with test status and results
+
+This system uses multiple specialized agents to handle each phase of the testing process, ensuring consistent and thorough test coverage for OpenShift components.
 
 ## 📋 Prerequisites
 
-Before you can use this test case generation workflow, you need to set up the following integrations:
+Before you can use this test generation system, you need to set up the following integrations:
 
 ### 1. Install Claude Code 
 - **Claude Code access**: Follow [Claude Code Install Instructions](https://docs.google.com/document/d/1eNARy9CI28o09E7Foq01e5WD5MvEj3LSBnXqFcprxjo/edit?usp=drivesdk)
@@ -16,340 +26,165 @@ Before you can use this test case generation workflow, you need to set up the fo
   ```bash
   claude mcp add jira-mcp-snowflake https://jira-mcp-snowflake.mcp-playground-poc.devshift.net/sse --transport sse -H "X-Snowflake-Token: your_token_here"
   ```
-### 3. DeepWiki MCP Connection
+### 3. DeepWiki MCP Connection 
   ```bash
   claude mcp add -s user -t http deepwiki https://mcp.deepwiki.com/mcp
   ```
-### 4. 🔧 Configuration Guide
+### 4. Prepare Test Generation Rules
+- **Purpose**: Configure rules to guide AI in generating realistic and executable test cases
+- **Location**: `config/rules/`
+- **Content**: Component-specific testing guidelines, validation criteria, and best practices
 
-For other components wanting to use this workflow, see the comprehensive [User Configuration Guide](USER_CONFIGURATION_GUIDE.md) which includes:
+### 5. Configure GitHub CLI (gh)
+- **Purpose**: Enable PR creation and GitHub repository operations
+- **Installation**: 
+  ```bash
+  # macOS
+  brew install gh
+  
+  # Linux/Windows
+  # Follow: https://cli.github.com/manual/installation
+  ```
+  
+### 6. Configure E2E Repository Fork
+**Purpose**: E2E test generation requires write access to openshift-tests-private repository  
+**Requirement**: Update the repository URL in the agent configuration to use your own fork
 
-
-
-## 🚀 Quick Start
-
-1. **Configure your environment** by updating paths in `config/components.yaml`
-For other components wanting to use this workflow, see the comprehensive [User Configuration Guide](USER_CONFIGURATION_GUIDE.md) which includes:
-
-2. **Provide a JIRA ticket key** (e.g., `HIVE-2883`, `CCO-1234`)
-3. **Execute the 4-phase workflow** following the prompts
-4. **Total execution time**: 4 minutes standard mode
-
-### Demo: 
- 1. [Assisted_E2E_Debug_Run.mov](https://drive.google.com/file/d/1vCsI2Z-f6EQkF4eNqyUlsDJln-gAI9t7/view?usp=drive_link) 
- 2. 
-
-## 📋 Overview
-
-### Core Features
-
-- **4-Phase Workflow Engine**: Sequential execution with parallel optimization
-- **Multi-Component Support**: OpenShift Hive (`HIVE-*`) and Cloud Credential Operator (`CCO-*`)
-- **Configuration-Driven**: All behavior controlled through YAML configurations
-- **Agent-Based Architecture**: 10 specialized agents for different aspects of test generation
-- **Template-Driven Output**: Standardized formats with component-specific variations
-- **Dual Execution Modes**: 4-minute standard mode or 90-second fast mode with parallel processing
-
-### Supported Components
-
-| Component | JIRA Prefix | Repository |
-|-----------|-------------|------------|
-| **OpenShift Hive** | `HIVE-*` | `github.com/openshift/hive` |
-| **Cloud Credential Operator** | `CCO-*` | `github.com/openshift/cloud-credential-operator` |
-
-## 📁 Project Structure
-
+**Steps to configure:**
 ```
-test_case_context/
-├── config/                        # Configuration directory
-│   ├── agents/                    # Agent configuration files
-│   │   ├── requirements_gathering.yaml
-│   │   ├── test_strategy_analysis.yaml
-│   │   ├── test_case_generation.yaml
-│   │   ├── e2e_test_generation.yaml
-│   │   ├── e2e_test_runner.yaml
-│   │   ├── e2e_validator_integrator.yaml
-│   │   ├── environment_checker.yaml
-│   │   └── test_result_analyzer.yaml
-│   ├── components.yaml            # Component definitions and settings
-│   ├── test_case_generation_workflow.yaml # Test case generation workflow
-│   ├── test_execution_workflow.yaml # Test execution workflow
-│   ├── rules/                     # Component-specific rules and guidelines
-│   │   ├── hive-rules/            # Hive component rules
-│   │   │   ├── component_rules_config.yaml
-│   │   │   ├── e2e_test_case_guidelines.md
-│   │   │   ├── e2e_mandatory_steps.yaml
-│   │   │   └── test_type_selection_criteria.yaml
-│   │   ├── cco-rules/             # CCO component rules
-│   │   │   ├── component_rules_config.yaml
-│   │   │   ├── e2e_test_case_guidelines.md
-│   │   │   └── test_type_selection_criteria.yaml
-│   │   └── common/                # Common rules and patterns
-│   │       └── universal_e2e_pattern_learning.yaml
-│   ├── templates/                 # Output templates
-│   │   ├── test_requirements_template.yaml
-│   │   ├── test_strategy_template.yaml
-│   │   ├── test_cases_template.yaml
-│   │   ├── test_cases_polarion_template.yaml
-│   │   └── e2e_test_results_template.md
-│   └── examples/                  # Example files and outputs
-│       ├── hive-examples/         # Hive component examples
-│       │   ├── hive-comprehensive-test-results-example.md
-│       │   ├── hive-e2e-test-execution-results-example.md
-│       │   ├── hive-test-correction-report-example.md
-│       │   └── hive-test-script-example.sh
-│       └── cco-examples/          # CCO component examples
-│           └── cco-polarion-test-case-example-simplified.xml
-├── prompts/                       # Workflow execution guides
-│   ├── execution_guide.md        # Comprehensive execution guide (4-min + 90-sec modes)
-│   ├── workflow_guide.md         # Complete workflow guide (generation + execution)
-│   ├── coordinator_execution_guide.md # E2E coordinator execution (advanced)
-│   └── check_list.md             # Comprehensive execution checklist
-├── workflow_outputs/              # Generated test outputs
-│   ├── hive/                      # Hive component outputs
-│   │   └── {JIRA_KEY}/           # e.g., HIVE-2040
-│   │       ├── phases/            # Phase outputs (requirements, strategy)
-│   │       ├── test_cases/        # Generated test cases
-│   │       └── test_execution_results/ # Test execution results
-│   └── cco/                       # CCO component outputs
-│       └── {JIRA_KEY}/           # e.g., CCO-681
-│           ├── phases/            # Phase outputs
-│           ├── test_cases/        # Generated test cases
-│           └── test_execution_results/ # Test execution results
-├── USER_CONFIGURATION_GUIDE.md    # Complete configuration guide for new components
-├── CLAUDE.md                      # Project instructions for Claude Code
-└── README.md                      # This file
+Edit `config/agents/e2e_test_generation_openshift_private.yaml`: 
+"If not exists: Clone https://github.com/YOUR_USERNAME/openshift-tests-private.git to temp_repos/openshift-tests-private/"
+```
+**Verify access**: Ensure you have write permissions to your fork for PR creation
+
+### 6. Execution Method
+
+**CRITICAL**: All agents must be executed by reading agent YAML configurations directly.  
+
+**Execution Pattern**:
+1. Read `CLAUDE.md` for agent instructions
+2. Read specific agent YAML config (e.g., `config/agents/test_case_generation.yaml`)
+3. Execute each step manually using available tools
+4. Verify each step before proceeding
+
+## 🚀  Agents
+
+### 1. Generate Test Cases
+**Purpose**: Generate manual test cases from JIRA tickets  
+**Agent Config**: `config/agents/test_case_generation.yaml`  
+**Input**: JIRA issue key (e.g., "HIVE-2883")  
+**Output**: 
+- `test_requirements_output.yaml` - Detailed requirements analysis
+- `test_strategy.yaml` - Test strategy based on requirements  
+- `{JIRA_KEY}_test_case.md` - Executable test cases in markdown format
+
+**Example Usage**:
+```
+"Create test case for HIVE-2883"
+"Generate test case for JIRA issue HIVE-2883"
+"Generate test cases and run them for HIVE-2883"  # Full flow
 ```
 
-## 🚀 Quick Start
+**Features**:
+- Systematic thinking framework (4 mandatory phases)
+- JIRA data extraction and analysis
+- Architecture analysis with DeepWiki integration
+- User-reality driven test scenarios
+- Quantitative validation methods  
 
-### 1. Configure Components
+### 2. Generate E2E Test Code
+**Purpose**: Generate E2E test code based on existing test cases  
+**Agent Config**: `config/agents/e2e_test_generation_openshift_private.yaml`  
+**Output**: E2E test code integrated into openshift-tests-private repository  
 
-Edit the `config/components.yaml` file to configure your components:
+### 2.1 Execute E2E Tests
+**Purpose**: Execute generated E2E tests and capture results  
+**Agent Config**: `config/agents/test-executor.yaml`  
+**Output**: Test execution results and reports  
 
-```yaml
-components:
-  hive:
-    name: "Hive"
-    repository: "openshift/hive"
-    rules_path: "config/rules/hive-rules/"
-    examples_path: "config/examples/hive-examples/"
-```
+### 3. Submit E2E Pull Request
+**Purpose**: Create PR for generated E2E tests  
+**Tools**: Git, GitHub CLI (gh)  
+**Output**: Created pull request with E2E test code  
 
-### 2. Run Workflow
+### 4. Update JIRA QE Comment [In Progress]
 
-```bash
-# Input JIRA issue key
-JIRA_KEY="HIVE-2040"
-COMPONENT="hive"
 
-# Execute workflow
-# System will automatically execute the following phases:
-# 1. Requirements gathering
-# 2. Test strategy analysis
-# 3. Test case generation
-# 4. E2E test generation (if needed)
-```
+### Agent Dependencies
+- test-executor requires completion of e2e_test_generation_openshift_private
+- PR submission requires completion of e2e_test_generation_openshift_private (and optionally test-executor)
+- JIRA QE comment update can be executed after any agent completion
 
-## 🏗️ Architecture
+## 🚀 Claude Code Usage
 
-### 4-Phase Workflow Engine
+### Quick Start
 
-```
-Phase 1 (60s)  → Requirements Gathering from JIRA
-Phase 2 (60s)  → Test Strategy Analysis (depends on Phase 1)
-Phase 3 & 4    → Parallel execution (150s total)
-   ├── Phase 3: Test Case Generation
-   └── Phase 4: E2E Test Generation
-```
+1. **Setup Prerequisites** (see above sections):
+   - Install Claude Code
+   - Configure JIRA MCP access
+   - Configure DeepWiki MCP
+   - Configure GitHub CLI (gh)
 
-**Total Execution**: 240 seconds (4 minutes) standard mode, 90 seconds (1.5 minutes) fast mode with parallel processing
+2. **Open Claude Code**:
+   ```bash
+   claude
+   ```
 
-### Agent Architecture
+3. **Navigate to project directory**:
+   ```bash
+   cd /path/to/.ai_testgen
+   ```
 
-#### Core Workflow Agents
-1. **requirements_gathering** - Extracts test requirements from JIRA tickets
-2. **test_strategy_analysis** - Determines optimal test execution strategy
-3. **test_case_generation** - Aggregates checkpoints and generates test scenarios
-4. **e2e_test_generation** - Generates and integrates E2E test code into openshift-tests-private repository
+4. **Execute agents directly**:
+   ```
+   # Generate test cases
+   "Create test case for HIVE-2883"
+   
+   # Generate E2E code
+   "Generate E2E case for HIVE-2883"
+   
+   # Execute E2E tests
+   "Run E2E tests for HIVE-2883"
 
-#### Specialized Agents
-5. **e2e_code_generator** - Generates actual test code implementation
-6. **e2e_validator_integrator** - Validates and integrates E2E tests
-7. **environment_checker** - Validates test environment requirements
-8. **test_result_analyzer** - Analyzes test execution results
-9. **e2e_test_runner** - Executes E2E tests in target environments
-10. **test-executor** - Comprehensive test execution orchestrator
+   # Complete end-to-end flow (executes all 3 agents in sequence)
+   "Generate test cases and run them for HIVE-2883"
+   # This automatically executes: test_case_generation → e2e_test_generation_openshift_private → test-executor
+   
+   # Create PR
+   "Create PR for HIVE-2883 E2E tests"
+   
+   # Add QE comment
+   "Add QE comment to HIVE-2883"
+   ```
 
-## 🔄 Workflow Phases
+### How It Works
 
-### Phase 1: Requirements Gathering (60s)
-- **Input**: JIRA issue key
-- **Process**: Extract requirements using `jira-mcp-snowflake`
-- **Output**: `test_requirements_output.yaml`
+1. **Claude reads CLAUDE.md** - Gets agent instructions
+2. **Reads agent YAML configs** - Gets specific execution steps  
+3. **Executes steps** - Uses available tools (JIRA MCP, WebFetch, Bash, etc.)
+4. **Verifies outputs** - Ensures each step completes successfully
+5. **Generates artifacts** - Creates test cases, E2E code, PRs, etc.
 
-### Phase 2: Test Strategy Analysis (60s)
-- **Input**: Phase 1 output + component rules
-- **Process**: Determine test execution strategy
-- **Output**: `{JIRA_KEY}_test_strategy_output.yaml`
+### No API Server Needed
+- Everything runs through Claude Code directly
+- No need for separate microservice or Docker containers
+- All agents executed via natural language commands
+- Real-time interaction and feedback
 
-### Phase 3: Test Case Generation (150s, parallel)
-- **Input**: Phase 1 & 2 outputs + templates
-- **Process**: Generate Polarion XML and Markdown test cases
-- **Output**: `_polarion.xml`, `_test_case.md`
-
-### Phase 4: E2E Test Generation (150s, parallel)
-- **Input**: Phase 1 & 2 outputs + E2E patterns
-- **Process**: Generate E2E test documentation with code integration
-- **Output**: `_e2e_test_results.md` + actual test code files
-
-### Output Structure
-
-```
-workflow_outputs/{COMPONENT}/{JIRA_KEY}/
-├── phases/
-│   ├── test_requirements_output.yaml
-│   ├── {JIRA_KEY}_test_strategy_output.yaml
-│   └── {JIRA_KEY}_e2e_test_results.md
-└── test_cases/
-    ├── {JIRA_KEY}_polarion.xml
-    └── {JIRA_KEY}_test_case.md
-```
-
-## ⚙️ Configuration
-
-### Component Configuration (`config/components.yaml`)
-
-```yaml
-components:
-  hive:
-    name: "Hive"
-    repository: "openshift/hive"
-    rules_path: "config/rules/hive-rules/"
-    examples_path: "config/examples/hive-examples/"
-    
-  cco:
-    name: "Cloud Credential Operator"
-    repository: "openshift/cloud-credential-operator"
-    rules_path: "config/rules/cco-rules/"
-    examples_path: "config/examples/cco-examples/"
-
-component_detection:
-  jira_to_component:
-    HIVE: "hive"
-    CCO: "cco"
-```
-
-### Workflow Configuration (`config/test_case_generation_workflow.yaml`)
-
-- **Target execution time**: 240 seconds (4 minutes) standard mode, 90 seconds (1.5 minutes) fast mode
-- **Parallel execution**: Phase 3 & 4 run concurrently
-- **Ultra-fast mode**: Aggressive optimization enabled
-- **Resource limits**: 2GB memory (fast mode), 4GB memory (standard mode), 4-8 CPU cores
-
-## 🛠️ Advanced Features
-
-### Component-Specific Rules
-
-Each component has its own rule system:
-
-```yaml
-# config/rules/{COMPONENT}-rules/component_rules_config.yaml
-agent_rules:
-  requirements_gathering:
-    - "hive_day1_test_case_rules.yaml"
-    - "test_type_selection_criteria.yaml"
-  test_strategy_analysis:
-    - "hive_operator_test_rules.yaml"
-    - "e2e_test_case_guidelines.yaml"
-```
-
-### E2E Code Generation
-
-- **Automatic branch creation**: `ai-case-design-{JIRA_KEY}`
-- **Code integration**: Direct file updates in E2E repository
-- **Validation**: Syntax checking and format validation
-- **Test data creation**: YAML templates and configuration files
-
-### Performance Optimization
-
-- **Parallel execution**: Phase 3 & 4 run simultaneously
-- **Caching**: 5-minute TTL for component rules, 10-minute TTL for DeepWiki queries
-- **Resource optimization**: 8-core CPU allocation for parallel processing
-- **Fast-fail**: Immediate stop on critical path failures
-
-## 🔗 Integration Points
+## 🔗 Integrations
 
 ### JIRA Integration
 - **MCP Endpoint**: `jira-mcp-snowflake`
-- **Data Source**: Snowflake-backed JIRA data warehouse
-- **Timeout**: 30 seconds per query
+- **Purpose**: Extract ticket requirements and details
 
 ### DeepWiki Integration
 - **MCP Endpoint**: `DeepWiki MCP`
 - **Purpose**: Code change analysis and testing implications
-- **Parallel Queries**: Up to 8 concurrent connections
 
 ### GitHub Integration
 - **Repository Management**: Automatic branch creation
 - **File Operations**: Direct file creation in E2E repositories
-- **Version Control**: Git integration for test code management
 
-## 📋 Execution Checklist
+## 📚 Documentation
 
-### Pre-Execution Requirements
-- [ ] JIRA issue exists and is accessible
-- [ ] E2E repository paths are accessible and writable
-- [ ] Component configuration loaded
-- [ ] Dynamic variables initialized
-
-### Phase Completion Markers
-
-#### ✅ Phase 1 Complete
-- [ ] JIRA issue data retrieved successfully
-- [ ] `test_requirements_output.yaml` generated
-- [ ] File size > 30 lines
-- [ ] Execution time ≤ 60 seconds
-
-#### ✅ Phase 2 Complete
-- [ ] Phase 1 output loaded successfully
-- [ ] Component rules applied
-- [ ] `test_strategy_output.yaml` generated
-- [ ] E2E decision clear (YES/NO)
-- [ ] Execution time ≤ 60 seconds
-
-#### ✅ Phase 3&4 Parallel Complete
-- [ ] Both phases started simultaneously
-- [ ] Test cases generated (Phase 3)
-- [ ] E2E documentation generated (Phase 4)
-- [ ] Both complete within 150 seconds
-- [ ] No inter-phase waiting time
-
-## 📝 Development
-
-### Adding New Components
-1. Update `config/components.yaml` with component definition
-2. Create component-specific rules in `config/rules/{COMPONENT}-rules/`
-3. Add examples in `config/examples/{COMPONENT}-examples/`
-4. Test with sample JIRA ticket
-
-### Modifying Workflow
-1. Update `config/test_case_generation_workflow.yaml`
-2. Modify agent configurations in `config/agents/`
-3. Update component rules as needed
-4. Test end-to-end execution
-
-## 📚 Related Documentation
-
-- `USER_CONFIGURATION_GUIDE.md` - Complete configuration guide for new components
-- `prompts/execution_guide.md` - Comprehensive execution guide (4-minute standard + 90-second fast mode)
-- `prompts/workflow_guide.md` - Complete workflow guide (test case generation + test execution)
-- `prompts/coordinator_execution_guide.md` - E2E coordinator execution (advanced usage)
-- `prompts/check_list.md` - Comprehensive execution checklist
-- `CLAUDE.md` - Project instructions for Claude Code
-
-## 🤝 Contributing
-1. Follow existing configuration patterns
-2. Test with sample JIRA tickets
-3. Update documentation for new features
-4. Maintain backward compatibility# test-generation-assistant
+- **[CLAUDE.md](CLAUDE.md)** - Complete agent instructions and execution guide

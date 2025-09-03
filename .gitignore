@@ -2,5 +2,5 @@
 .claude/
 .claude-ai/
 
-# Workflow outputs (consider if you want to track these)
-workflow_outputs/
+#e2e test code repo
+temp_repos/
