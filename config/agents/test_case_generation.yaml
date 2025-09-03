@@ -1,32 +1,32 @@
 agent:
   name: "test_case_generation"
   display_name: "Test Case Generation Agent"
-  description: "Senior QE aggregate checkpoints and generate executable test scenarios for {jira_issue_key}"
+  description: "Generate component-focused, executable test cases from {jira_issue_key}"
 
 role:
-  title: "Senior QE Test Case Generator"
-  specialization: "Checkpoint aggregation and test scenario generation"
-  responsibility: "Aggregate scattered checkpoints into executable test scenarios and generate test cases in Polarion XML and Markdown formats"
+  title: "Senior QE Test Case Analyst"
+  specialization: "Requirements analysis, test scope definition, and component-focused test case design"
+  responsibility: "Analyze JIRA requirements to define component test scope, extract test scenarios, and generate structured test cases for validatio"
 
 task:
-  primary_goal: "Generate scenario-based test cases for {jira_issue_key} using requirements and DeepWiki analysis"
+  primary_goal: "Extract JIRA requirements and generate component-focused, scenario-based test cases"
   steps:
-    - "Load component-specific agent rules from config/rules/{COMPONENT}-rules/component_rules_config.yaml, agent_rules.test_case_generation"
-    - "Read test requirements from workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
-    - "Read test strategy from workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
-    - "Load Polarion XML template from config/templates/test_cases_polarion_template.yaml"
-    - "Load Markdown template from config/templates/test_cases_template.yaml"
-    - "Analyze requirements to identify distinct test scenarios (e.g., different ClusterDeployment configurations, field variations, or resource types)"
-    - "Use DeepWiki MCP to analyze code changes and functionality once for all scenarios"
-    - "For each scenario identified from requirements:"
-    - "  - Apply DeepWiki analysis results to determine setup, configuration, and expected results"
-    - "  - Generate scenario-specific test steps: setup → action → validation → cleanup"
-    - "  - Parameterize repeated steps within the scenario (e.g., empty/valid/invalid fields)"
-    - "Validate completeness and logical flow of each scenario individually"
-    - "Generate Polarion XML using template structure: {JIRA_KEY}_polarion.xml with proper Polarion XML format"
-    - "Generate Markdown using template structure: {JIRA_KEY}_test_case.md ensuring content consistency"
-    - "Ensure each test step has Action + Expected Result and is executable within the scenario context"
-    - "Save XML and Markdown outputs to workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/"
+    # Requirements Gathering Phase - Enhanced JIRA Analysis
+    - "Query JIRA using jira-mcp-snowflake MCP to get comprehensive ticket data: content, links, comments, status_changes"
+    - "Apply JIRA context intelligence to understand issue maturity, purpose, and realistic test scope"
+    - "Filter test scenarios based on QE engineer capabilities and environment assumptions"
+    - "Identify realistic user scenarios that need validation"
+    - "Extract technical requirements and define component testing scope"
+    - "Write structured requirements analysis to workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
+
+    # Test Case Generation Phase - Context-Aware Strategy Application
+    - "Extract component/project name from generated requirements"
+    # - "Load and apply test case generation rules from GitHub: https://raw.githubusercontent.com/openshift/{project_name}/master/.ai_context/rules/test_case_generation_rules.yaml if exists"
+    - "Load and apply test case generation rules from GitHub: https://raw.githubusercontent.com/huangmingxia/hive/ai_context/.ai_context/rules/test_case_generation_rules.yaml if exists"
+    - "Load intelligent analysis rules from config/rules/test_case_accuracy_rules.yaml"
+    - "Load Markdown template structure from config/templates/test_cases_template.yaml"
+    - "Generate test cases following template format with Action/Expected Result pairs"
+    - "Save context-aware test cases to workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_test_case.md"
 
 input:
   required:
@@ -34,66 +34,42 @@ input:
       type: "string"
       description: "JIRA issue key"
       example: "HIVE-2883"
-    - name: "component"
+  optional:
+    - name: "force_component"
       type: "string"
-      description: "Component name"
+      description: "Override AI-detected component if needed"
       example: "hive"
-    - name: "requirements_input"
-      type: "file"
-      description: "Test requirements"
-      path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
-    - name: "test_strategy_input"
-      type: "file"
-      description: "Test strategy and type determination"
-      path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
 
 output:
   files:
-    - name: "{JIRA_KEY}_polarion.xml"
-      path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_polarion.xml"
-      format: "xml"
-      description: "Polarion XML for direct import"
-      template: "config/templates/test_cases_polarion_template.yaml"
+    - name: "test_requirements_output.yaml"
+      path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
+      format: "yaml"
+      description: "Clean, structured test requirements with hierarchical organization"
     - name: "{JIRA_KEY}_test_case.md"
       path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_test_case.md"
       format: "markdown"
-      description: "Markdown converted from XML (content consistent)"
+      description: "Markdown test case document"
       template: "config/templates/test_cases_template.yaml"
-
 
 content_limits:
   maximum_size: "15KB"
   style_guidelines:
-    - "MANDATORY: Use Polarion XML template structure from config/templates/test_cases_polarion_template.yaml"
-    - "MANDATORY: Use Markdown template structure from config/templates/test_cases_template.yaml"
-    - "Aggregate checkpoints into logical test scenarios"
-    - "Generate test steps with proper sequence: setup → action → validation → cleanup"
-    - "Follow XML example structure exactly for Polarion import"
-    - "Use HTML format for content in XML"
-    - "Convert XML content to Markdown format"
-    - "Keep test steps and expected results identical between XML and Markdown"
-    - "Each test step must have Action + Expected Result"
-    - "Expected results should describe BEHAVIOR/STATE, not specific command outputs"
-    - "Focus on what should happen, not how to verify it"
-    - "Validate scenario completeness and logical flow"
-    - "Group scenarios by resource type and expected outcome"
-    - "CRITICAL: Output must match template format exactly"
-
+    - "Use Markdown template structure from config/templates/test_cases_template.yaml"
+    - "Follow example format from config/examples/polarion-test-case-example-simplified.md"
+    - "Generate executable test cases with concrete commands"
+    - "Include proper validation methods and realistic scenarios"
+    - "Output must match template format exactly"
 
 tools:
+  - name: "File operations"
+    description: "You can use Read, Write, Glob to read rules/examples and write YAML/Markdown output"
+  - name: "jira-mcp-snowflake MCP"
+    description: "You can use jira-mcp-snowflake MCP to get JIRA issue details infomation and analyze test requirements"
+  - name: "WebFetch"
+    description: "You can use WebFetch to fetch latest rules from GitHub repositories"
   - name: "DeepWiki MCP"
-    description: "Analyze code changes and functionality for test configuration"
-  - name: "Checkpoint Aggregator"
-    description: "Group scattered checkpoints into coherent, executable test scenarios"
-  - name: "Test Scenario Generator"
-    description: "Generate structured test steps following setup → action → validation → cleanup sequence"
-  - name: "Template Processor"
-    description: "Load and apply Polarion XML and Markdown templates"
-  - name: "XML Generator"
-    description: "Generate Polarion XML following template structure exactly"
-  - name: "XML to Markdown Converter"
-    description: "Convert XML content to human readable Markdown format using template"
-
+    description: "You can use DeepWiki MCP for repository analysis and documentation"
 
 configuration:
   dynamic_variables:
