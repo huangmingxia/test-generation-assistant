@@ -9,12 +9,16 @@ role:
   responsibility: "Extract test checkpoints and requirements from JIRA issues for {jira_issue_key}"
 
 task:
-  primary_goal: "Extract test checkpoints and requirements from JIRA issues for {jira_issue_key}"
+  primary_goal: "Extract essential test data from JIRA {jira_issue_key} in under 30 seconds"
+  execution_strategy: "direct_mcp_and_template"
+  execution_method: "no_task_tool_required"
   steps:
-    - "Load component-specific agent rules from config/rules/{COMPONENT}-rules/component_rules_config.yaml, agent_rules.requirements_gathering"
-    - "Fetch JIRA issue details using jira-mcp-snowflake MCP"
-    - "STRICTLY follow output template structure from config/templates/test_requirements_template.yaml"
-    - "Save to workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
+    - "Use jira-mcp-snowflake MCP to query JIRA (15s max)"
+    - "Fill inline_template variables directly (10s max)" 
+    - "Write YAML file to specified path (5s max)"
+  optimization_mode: "ultra_fast"
+  skip_validation: true
+  requires_mcp_tools: ["jira-mcp-snowflake"]
 
 input:
   required:
@@ -28,23 +32,42 @@ input:
       example: "hive"
 
 content_limits:
-  maximum_size: "1.5KB"
+  maximum_size: "1KB"
   style_guidelines:
-    - "STRICTLY follow template structure exactly - no deviations allowed"
-    - "Use bullet points"
-    - "Focus on test checkpoints"
-    - "No detailed analysis"
-    - "Fast mode"
-    - "Template structure is mandatory"
+    - "ULTRA-FAST mode: Template filling only"
+    - "Essential data extraction only"
+    - "Maximum 6 test checkpoints"
+    - "Maximum 3 platforms"
+    - "No analysis, just facts"
+    - "Skip optional fields if data not immediately available"
 
 tools:
   - name: "jira-mcp-snowflake MCP"
-    description: "Fetch JIRA issue details and extract requirements"
+    description: "Single fast JIRA query - essential fields only"
+    timeout: 15
+    query_optimization: true
+    fields_limit: ["summary", "description", "component", "priority", "status"]
+
+output:
+  format: "yaml"
+  file_path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
+  inline_template: |
+    jira_issue:
+      key: "{JIRA_KEY}"
+      summary: "{ISSUE_SUMMARY}"
+
+    test_checkpoints:
+      - "{CHECKPOINT_1}"
+      - "{CHECKPOINT_2}"
+      - "{CHECKPOINT_3}"
+
+    target_platforms:
+      - "{PLATFORM_1}"
+
+    test_scope:
+      in_scope: ["{IN_SCOPE_1}", "{IN_SCOPE_2}"]
+      out_of_scope: ["{OUT_OF_SCOPE_1}"]
 
 configuration:
-  dynamic_variables:
-    - "{COMPONENT}"
-    - "{JIRA_KEY}"
-  template_replacement: true
-  template_enforcement: "strict"
-  
+  optimization_mode: "ultra_fast"
+  skip_validation: true

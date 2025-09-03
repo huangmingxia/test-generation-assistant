@@ -48,7 +48,7 @@ phases:
 
   phase_2:
     name: "e2e_test_execution"
-    agent: "e2e_test_runner"
+    agent: "test-executor"
     description: "Execute E2E tests in target environment"
     execution_order: 2
     dependencies: ["phase_1"]
@@ -63,7 +63,7 @@ phases:
           timeout: 10
         - step: "load_agent_config"
           action: "load_agent_config"
-          config_file: "config/agents/e2e_test_runner.yaml"
+          config_file: "config/agents/test-executor.yaml"
         - step: "load_test_inputs"
           action: "load_phase_outputs"
           inputs:
@@ -80,51 +80,27 @@ phases:
             - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/e2e_test_results.xml"
 
   phase_3:
-    name: "manual_test_guidance"
-    agent: "test_case_generation"
-    description: "Provide manual test execution guidance"
-    execution_order: 3
-    dependencies: ["phase_1"]
-    parallel_with: ["phase_2"]
-    timeout: 120
-    
-    execution_logic:
-      steps:
-        - step: "load_manual_test_cases"
-          action: "load_phase_outputs"
-          inputs:
-            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_test_case.md"
-        - step: "prepare_manual_execution"
-          action: "execute_agent"
-          tools: ["manual_test_preparation", "environment_setup"]
-          output_format: "markdown"
-        - step: "save_manual_guidance"
-          action: "save_to_file"
-          path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/manual_test_guidance.md"
-
-  phase_4:
     name: "test_result_analysis"
-    agent: "test_result_analyzer"
+    agent: "test-executor"
     description: "Analyze test execution results and generate reports"
-    execution_order: 4
-    dependencies: ["phase_2", "phase_3"]
+    execution_order: 3
+    dependencies: ["phase_2"]
     timeout: 180
     
     execution_logic:
       steps:
         - step: "wait_for_dependencies"
           action: "wait_for_phase"
-          wait_for: ["phase_2", "phase_3"]
+          wait_for: "phase_2"
           timeout: 15
         - step: "load_agent_config"
           action: "load_agent_config"
-          config_file: "config/agents/test_result_analyzer.yaml"
+          config_file: "config/agents/test-executor.yaml"
         - step: "load_execution_results"
           action: "load_phase_outputs"
           inputs:
             - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/e2e_execution_log.txt"
             - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/e2e_test_results.xml"
-            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_execution_results/manual_test_guidance.md"
         - step: "analyze_results"
           action: "execute_agent"
           tools: ["result_parser", "failure_analyzer", "recommendation_engine"]
@@ -149,7 +125,7 @@ execution_strategy:
     
   failure_handling:
     continue_on_non_critical_failure: true
-    critical_phases: ["phase_1", "phase_2"]
+    critical_phases: ["phase_1", "phase_2", "phase_3"]
     retry_failed_tests: true
     max_test_retries: 2
 
@@ -220,9 +196,8 @@ test_execution_types:
     parallel_execution: false
     
   manual_tests:
-    enabled: true
-    priority: "medium"
-    guidance_only: true
+    enabled: false
+    priority: "low"
     
   integration_tests:
     enabled: false

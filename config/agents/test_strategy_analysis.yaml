@@ -9,15 +9,16 @@ role:
   responsibility: "Determine test execution strategy for {jira_issue_key}"
 
 task:
-  primary_goal: "Determine test execution strategy for {jira_issue_key}"
+  primary_goal: "Ultra-fast E2E decision for {jira_issue_key} in under 10 seconds"
+  execution_strategy: "direct_rule_and_template"
+  execution_method: "no_task_tool_required"
   steps:
-    - "Load component-specific agent rules from config/rules/{COMPONENT}-rules/component_rules_config.yaml, agent_rules.test_strategy_analysis"
-    - "Analyze requirements and knowledge base inputs"
-    - "Apply E2E decision rules from test_type_selection_criteria.yaml"
-    - "Determine E2E testing decision (Yes/No) based on platform and criteria"
-    - "STRICTLY follow template structure from config/templates/test_strategy_template.yaml - NO additional sections"
-    - "DO NOT add test_strategy_details or any other sections not in template"
-    - "Save to workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
+    - "Load component rules from config/rules/{COMPONENT}-rules/ (3s max)"
+    - "Apply rule-based decision logic (2s max)"
+    - "Fill inline_template with decision (5s max)"
+  optimization_mode: "ultra_fast"
+  skip_analysis: true
+  rule_based_only: true
 
 input:
   required:
@@ -38,27 +39,42 @@ input:
 output:
   file_path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
   format: "yaml"
-  template: "config/templates/test_strategy_template.yaml"
-  template_mandatory: true
-  strict_template_compliance: true
-  no_additional_sections: true
+  inline_template: |
+    phase: "test_strategy_analysis"
+    output_file: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
+
+    jira_issue:
+      key: "{JIRA_KEY}"
+      component: "{COMPONENT}"
+
+    e2e_decision:
+      required: "{YES_NO}"
+      reasoning: "{REASONING}"
+      rules_applied:
+        - rule_source: "test_type_selection_criteria.yaml"
+          criteria: "{PLATFORM_SPECIFIC_CRITERIA}"
+          decision: "{YES_NO}"
+
+    execution_plan:
+      phase_3: "Generate test cases (always)"
+      phase_4: "Generate E2E tests (only if e2e_decision.required = YES)"
 
 content_limits:
-  maximum_size: "1KB"
+  maximum_size: "0.5KB"
   style_guidelines:
-    - "STRICTLY follow template structure exactly - no deviations allowed"
-    - "ONLY include fields defined in template - no additional sections"
-    - "Template structure is mandatory and complete"
-    - "Apply E2E decision rules from test_type_selection_criteria.yaml"
-    - "Keep output minimal and template-compliant only"
+    - "ULTRA-FAST mode: Rule matching only"
+    - "Simple YES/NO decision"
+    - "No analysis text"
+    - "Template fill only"
+    - "10 second max execution"
 
 tools:
-  - name: "Test Strategy Analyzer"
-    description: "Analyze requirements and determine test strategy"
+  - name: "File operations"
+    description: "Read component rules and requirements input"
+    timeout: 5
+    operations: ["Read", "Write"]
+  requires_mcp_tools: []
 
 configuration:
-  dynamic_variables:
-    - "{COMPONENT}"
-    - "{JIRA_KEY}"
-  template_replacement: true
-  template_enforcement: "strict"
+  optimization_mode: "ultra_fast"
+  skip_validation: true

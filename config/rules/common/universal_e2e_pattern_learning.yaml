@@ -1,32 +1,5 @@
 # Universal E2E Pattern Learning
 scope: "universal_e2e_test_generation"
-applicability: "all_components"
-
-# Platform Detection
-platform_detection:
-  platform_keywords:
-    azure: ["Azure", "azure", "AzureGov", "usgovtexas"]
-    aws: ["AWS", "aws", "us-east-1", "us-west-2"]
-    gcp: ["GCP", "gcp", "us-central1"]
-    vsphere: ["vSphere", "vsphere"]
-    
-  target_file_mapping:
-    hive:
-      azure: "hive_azure.go"
-      aws: "hive_aws.go"
-      gcp: "hive_gcp.go"
-      vsphere: "hive_vsphere.go"
-      default: "hive.go"
-    cco:
-      azure: "cco_azure.go"
-      aws: "cco_aws.go"
-      gcp: "cco_gcp.go"
-      default: "cco.go"
-    default:
-      azure: "{component}_azure.go"
-      aws: "{component}_aws.go"
-      gcp: "{component}_gcp.go"
-      default: "{component}.go"
 
 # Pattern Learning
 pattern_learning:

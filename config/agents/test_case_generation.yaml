@@ -1,32 +1,57 @@
 agent:
   name: "test_case_generation"
   display_name: "Test Case Generation Agent"
-  description: "Senior QE aggregate checkpoints and generate executable test scenarios for {jira_issue_key}"
+  description: "Senior QE aggregates checkpoints and generates executable, scenario-based test cases for {jira_issue_key}"
 
 role:
   title: "Senior QE Test Case Generator"
-  specialization: "Checkpoint aggregation and test scenario generation"
-  responsibility: "Aggregate scattered checkpoints into executable test scenarios and generate test cases in Polarion XML and Markdown formats"
+  specialization: "Checkpoint aggregation, semantic understanding, and scenario-based test generation"
+  responsibility: "Aggregate scattered checkpoints into executable test scenarios, understand checkpoint semantics, and generate Markdown test cases"
 
 task:
   primary_goal: "Generate scenario-based test cases for {jira_issue_key} using requirements and DeepWiki analysis"
-  steps:
-    - "Load component-specific agent rules from config/rules/{COMPONENT}-rules/component_rules_config.yaml, agent_rules.test_case_generation"
-    - "Read test requirements from workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
-    - "Read test strategy from workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
-    - "Load Polarion XML template from config/templates/test_cases_polarion_template.yaml"
-    - "Load Markdown template from config/templates/test_cases_template.yaml"
-    - "Analyze requirements to identify distinct test scenarios (e.g., different ClusterDeployment configurations, field variations, or resource types)"
-    - "Use DeepWiki MCP to analyze code changes and functionality once for all scenarios"
-    - "For each scenario identified from requirements:"
-    - "  - Apply DeepWiki analysis results to determine setup, configuration, and expected results"
-    - "  - Generate scenario-specific test steps: setup → action → validation → cleanup"
-    - "  - Parameterize repeated steps within the scenario (e.g., empty/valid/invalid fields)"
-    - "Validate completeness and logical flow of each scenario individually"
-    - "Generate Polarion XML using template structure: {JIRA_KEY}_polarion.xml with proper Polarion XML format"
-    - "Generate Markdown using template structure: {JIRA_KEY}_test_case.md ensuring content consistency"
-    - "Ensure each test step has Action + Expected Result and is executable within the scenario context"
-    - "Save XML and Markdown outputs to workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/"
+  execution_strategy: "structured_scenario_analysis_workflow"
+  execution_method: "multi_step_processing_required"
+  template_mode: "dynamic_scenario_generation"
+  workflow_phases:
+
+    phase_1_preparation:
+      name: "Configuration and Input Loading"
+      steps:
+        - "Load component-specific agent rules from config/rules/{COMPONENT}-rules/component_rules_config.yaml, agent_rules.test_case_generation"
+        - "Read test requirements from workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
+        - "Read test strategy from workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
+        - "Load test case examples from config/examples/{COMPONENT}-examples/"
+        - "Load Markdown template from config/templates/test_cases_template.yaml"
+
+    phase_2_checkpoint_analysis:
+      name: "Checkpoint Semantic Analysis and Scenario Aggregation"
+      steps:
+        - "STEP 1: Parse each checkpoint description to extract semantic meaning: functionality, expected behavior, dependencies"
+        - "STEP 2: Map each checkpoint to its resource type and validation area"
+        - "STEP 3: Identify checkpoint dependencies (preconditions, execution order constraints)"
+        - "STEP 4: Group related checkpoints into logical scenarios based on resource type and functional similarity"
+        - "STEP 5: Optimize scenario composition to minimize test case count"
+        - "STEP 6: Output scenario mapping with semantic info: scenario_id → list of checkpoints with functionality, dependencies, expected behavior"
+
+    phase_3_scenario_processing:
+      name: "Consolidated Scenario Processing"
+      iteration_logic: "FOR EACH scenario in scenario_mapping"
+      steps:
+        - "STEP 1: Merge checkpoint setups to create scenario-level setup"
+        - "STEP 2: Generate consolidated test steps: sequential actions → cumulative validations → cleanup"
+        - "STEP 3: Parameterize repeated steps across checkpoints within the scenario"
+        - "STEP 4: Ensure checkpoint execution order respects dependencies and functional logic"
+        - "STEP 5: Validate completeness and logical flow of the consolidated scenario"
+        - "STEP 6: Generate semantic annotations for each step (functionality, expected behavior)"
+
+    phase_4_output_generation:
+      name: "Final Test Case Document Generation"
+      steps:
+        - "Generate Markdown for each consolidated scenario using dynamic template"
+        - "Ensure each test step has Action + Expected Result, reflecting combined behavior of all checkpoints"
+        - "Validate scenario completeness and logical flow"
+        - "Save comprehensive Markdown output to workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/"
 
 input:
   required:
@@ -49,29 +74,20 @@ input:
 
 output:
   files:
-    - name: "{JIRA_KEY}_polarion.xml"
-      path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_polarion.xml"
-      format: "xml"
-      description: "Polarion XML for direct import"
-      template: "config/templates/test_cases_polarion_template.yaml"
     - name: "{JIRA_KEY}_test_case.md"
       path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_test_case.md"
       format: "markdown"
-      description: "Markdown converted from XML (content consistent)"
+      description: "Markdown test case document"
       template: "config/templates/test_cases_template.yaml"
-
 
 content_limits:
   maximum_size: "15KB"
   style_guidelines:
-    - "MANDATORY: Use Polarion XML template structure from config/templates/test_cases_polarion_template.yaml"
     - "MANDATORY: Use Markdown template structure from config/templates/test_cases_template.yaml"
+    - "REFERENCE: Follow example format from config/examples/hive-examples/hive-polarion-test-case-example-simplified.md"
     - "Aggregate checkpoints into logical test scenarios"
     - "Generate test steps with proper sequence: setup → action → validation → cleanup"
-    - "Follow XML example structure exactly for Polarion import"
-    - "Use HTML format for content in XML"
-    - "Convert XML content to Markdown format"
-    - "Keep test steps and expected results identical between XML and Markdown"
+    - "Use clean Markdown format for all content"
     - "Each test step must have Action + Expected Result"
     - "Expected results should describe BEHAVIOR/STATE, not specific command outputs"
     - "Focus on what should happen, not how to verify it"
@@ -79,21 +95,11 @@ content_limits:
     - "Group scenarios by resource type and expected outcome"
     - "CRITICAL: Output must match template format exactly"
 
-
 tools:
-  - name: "DeepWiki MCP"
-    description: "Analyze code changes and functionality for test configuration"
-  - name: "Checkpoint Aggregator"
-    description: "Group scattered checkpoints into coherent, executable test scenarios"
-  - name: "Test Scenario Generator"
-    description: "Generate structured test steps following setup → action → validation → cleanup sequence"
-  - name: "Template Processor"
-    description: "Load and apply Polarion XML and Markdown templates"
-  - name: "XML Generator"
-    description: "Generate Polarion XML following template structure exactly"
-  - name: "XML to Markdown Converter"
-    description: "Convert XML content to human readable Markdown format using template"
-
+  - name: "File operations"
+    description: "Read requirements, strategy, rules, examples, and write Markdown output"
+    operations: ["Read", "Write", "Glob"]
+  requires_mcp_tools: ["DeepWiki MCP"]
 
 configuration:
   dynamic_variables:

@@ -27,13 +27,10 @@ component_detection:
 
   auto_detection:
     enabled: true
-    fallback: "hive"
-    
+        
     # Fast component field mapping
     component_field_mapping:
       "Cloud Credential Operator": "cco"
       "Hive": "hive"
-      "cluster-api": "hive"
-      "installer": "hive"
 
 

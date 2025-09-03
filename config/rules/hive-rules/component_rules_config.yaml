@@ -9,7 +9,7 @@ e2e_type: "test_private" # or component_repo
 e2e_repositories:
   test_private:
     name: "openshift-tests-private"
-    location: "/Users/mihuang/auto-test-case/openshift-tests-private"
+    location: "/Users/mihuang/AI/test-generation-assistant/openshift-tests-private"
     url: "https://github.com/openshift/openshift-tests-private.git"
     type: "shared"
     target_dir: "test/extended/cluster_operator/hive/"
@@ -17,7 +17,7 @@ e2e_repositories:
 
   component_repo:
     name: "hive"
-    location: "/Users/mihuang/auto-test-case/hive"
+    location: "./hive"
     url: "https://github.com/openshift/hive.git"
     type: "component"
     target_dir: "test/e2e/"
@@ -36,6 +36,5 @@ agent_rules:
     - "e2e_test_case_guidelines.md"
   e2e_validator_integrator: []
   environment_checker: []
-  e2e_test_runner: []
-  test_result_analyzer: []
   test-executor: []
+  test_result_analyzer: []

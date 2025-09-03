@@ -12,68 +12,58 @@ workflow:
 phases:
   phase_1:
     name: "requirements_gathering"
-    agent: "requirements_gathering_ultra_fast"
-    description: "Ultra-fast requirements gathering from JIRA"
+    agent: "requirements_gathering"
+    description: "Lightning-fast requirements gathering from JIRA (30s target)"
     execution_order: 1
     dependencies: []
-    timeout: 60  # 1 minute for JIRA queries and processing
+    timeout: 35  # 35 seconds hard limit
     critical_path: true
+    optimization_level: "maximum_speed"
+    fast_fail_enabled: true
+    cache_enabled: false  # Skip caching for speed
     
     execution_logic:
       steps:
-        - step: "load_agent_config"
-          action: "load_agent_config"
-          config_file: "config/agents/requirements_gathering.yaml"
-        - step: "validate_jira_key"
-          action: "validate_jira_key"
-          validation: ["jira_key_format", "component_detection", "access_permissions"]
-        - step: "execute_agent"
-          action: "execute_agent"
+        - step: "fast_execute"
+          action: "execute_agent_direct"
           tools: ["jira-mcp-snowflake"]
           output_format: "yaml"
-        - step: "save_output"
-          action: "save_to_file"
+          skip_validation: true
+          fast_mode: true
           path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
 
   phase_2:
     name: "test_strategy_analysis"
     agent: "test_strategy_analysis"
-    description: "test execution strategy"
+    description: "Lightning-fast rule-based strategy decision (10s target)"
     execution_order: 2
     dependencies: ["phase_1"]
-    timeout: 60  # 1 minute for strategy analysis
+    timeout: 15  # 15 seconds - simple rule matching only
     critical_path: true
+    optimization_level: "maximum_speed"
     
     execution_logic:
       steps:
-        - step: "wait_for_dependencies"
-          action: "wait_for_phase"
-          wait_for: "phase_1"
-          timeout: 10
-        - step: "load_agent_config"
-          action: "load_agent_config"
-          config_file: "config/agents/test_strategy_analysis.yaml"
-        - step: "load_inputs"
-          action: "load_phase_outputs"
-          inputs:
-            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
-        - step: "execute_agent"
-          action: "execute_agent"
-          tools: ["component_rules", "test_patterns"]
+        - step: "fast_rule_match"
+          action: "execute_agent_direct"
+          input: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
+          tools: ["rule_matcher"]
           output_format: "yaml"
-        - step: "save_output"
-          action: "save_to_file"
+          skip_validation: true
+          rule_only: true
           path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
 
   phase_3:
     name: "test_case_generation"
     agent: "test_case_generation"
-    description: "Comprehensive test case generation using checkpoint aggregation"
+    description: "Comprehensive test case generation using checkpoint analysis and optimization"
     execution_order: 3
     dependencies: ["phase_2"]
-    timeout: 150  # 2.5 minutes for test case generation (runs in parallel with phase_4)
-    parallel_execution: true
-    parallel_group: "group_3"
+    timeout: 150  # 2.5 minutes for checkpoint analysis and test case generation
+    parallel_execution: false
+    optimization_level: "high_speed"
+    fast_fail_enabled: true
+    target_execution_time: 60  # Target: 60 seconds
     
     execution_logic:
       steps:
@@ -91,27 +81,31 @@ phases:
             - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
         - step: "execute_agent"
           action: "execute_agent"
-          tools: ["DeepWiki MCP", "Checkpoint Aggregator", "Test Scenario Generator", "Template Processor", "XML Generator", "XML to Markdown Converter"]
+          tools: ["DeepWiki MCP", "Checkpoint Aggregator", "Test Scenario Generator", "Template Processor", "Markdown Generator"]
           output_format: "mixed"
         - step: "save_outputs"
           action: "save_multiple_files"
           paths:
-            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_polarion.xml"
             - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_test_case.md"
 
   phase_4:
     name: "e2e_complete_generation"
     agent: "e2e_test_generation"
-    description: "Generate and integrate E2E test code into openshift-tests-private repository with automated validation"
-    execution_order: 3
-    dependencies: ["phase_2"]
-    timeout: 150  # 2.5 minutes for E2E generation with error fixing (runs in parallel with phase_3)
-    parallel_with: ["phase_3"]
-    parallel_execution: true
-    parallel_group: "group_3"
+    description: "Generate and integrate E2E test code using Phase 3 checkpoint analysis results"
+    execution_order: 4
+    dependencies: ["phase_3"]
+    timeout: 150
+    parallel_execution: false
+    execute_only_if: "e2e_decision.required == YES"
     
     execution_logic:
       steps:
+        - step: "check_e2e_required"
+          action: "check_yaml_field"
+          file: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
+          field: "e2e_decision.required"
+          expected: "YES"
+          skip_phase_if_false: true
         - step: "wait_for_dependencies"
           action: "wait_for_phase"
           wait_for: "phase_2"
@@ -124,10 +118,7 @@ phases:
           inputs:
             - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/test_requirements_output.yaml"
             - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_test_strategy_output.yaml"
-        - step: "load_test_cases_optional"
-          action: "load_optional_file"
-          input: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_test_case.md"
-          fallback: "generate_from_requirements"
+            - "workflow_outputs/{COMPONENT}/{JIRA_KEY}/test_cases/{JIRA_KEY}_test_case.md"
         - step: "execute_subtasks"
           action: "execute_sequential_subtasks"
           subtasks:
@@ -137,11 +128,6 @@ phases:
             - name: "E2E Test Case Generation"
               timeout: 120
               tools: ["Pattern Analyzer", "Code Generator", "File Integrator"]
-            - name: "Syntax Validation"
-              timeout: 60
-              tools: ["Syntax Validator", "Code Fixer", "Make Compiler"]
-              error_handling: "auto_fix_and_retry"
-          output_format: "markdown"
         - step: "save_output"
           action: "save_to_file"
           path: "workflow_outputs/{COMPONENT}/{JIRA_KEY}/phases/{JIRA_KEY}_e2e_test_results.md"
@@ -153,22 +139,16 @@ execution_strategy:
     max_concurrent_phases: 4
     dependency_resolution: "optimized"
     parallel_groups:
-      group_1: ["phase_1"]  # 60s
-      group_2: ["phase_2"]  # 60s (waits for phase_1)
-      group_3: ["phase_3", "phase_4"]  # 150s concurrent (waits for phase_2)
-    force_parallel_execution: true
-    skip_dependency_checks_for_parallel: true
-    concurrent_execution_enforced: true
+      group_1: ["phase_1"]  # 35s
+      group_2: ["phase_2"]  # 15s (waits for phase_1)
+      group_3: ["phase_3"]  # 150s (waits for phase_2)
+      group_4: ["phase_4"]  # 150s (waits for phase_3)
+    # Phase 4 will auto-skip if e2e_decision.required != "YES"
   
   critical_path:
     enabled: true
     phases: ["phase_1", "phase_2", "phase_3", "phase_4"]
     optimization_priority: "high"
-    
-  parallel_execution_rules:
-    phase_3_phase_4_parallel: true
-    ignore_sequential_dependencies: true
-    concurrent_start: true
 
 # Performance Configuration (Ultra-Fast)
 performance:
@@ -199,9 +179,20 @@ performance:
     rule_caching: true
     total_time_budget: 270  # 4.5 minutes hard limit
     phase_time_allocation:
-      phase_1: 60  # 1 minute
-      phase_2: 60  # 1 minute 
+      phase_1: 35  # 35 seconds (target: 30s)
+      phase_2: 15  # 15 seconds (target: 10s) - rule matching only
       phase_3_4_parallel: 150  # 2.5 minutes concurrent
+    
+    performance_targets:
+      phase_1_target: 30  # 30 seconds target
+      phase_1_warning: 25  # Warning if over 25s
+      phase_1_critical: 35  # Critical if over 35s
+      phase_2_target: 10   # 10 seconds target - simple rule lookup
+      phase_2_warning: 8   # Warning if over 8s
+      phase_2_critical: 15  # Critical if over 15s
+      phase_3_target: 60   # 60 seconds target - test case generation
+      phase_3_warning: 90  # Warning if over 90s
+      phase_3_critical: 150  # Critical if over 150s
 
 # Integration Configuration
 integration:
