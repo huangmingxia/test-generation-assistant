@@ -48,10 +48,10 @@ content_limits:
 tools:
   - name: "DeepWiki MCP"
     description: "Analyze correct command syntax and component patterns"
-  - name: "Test Failure Analyzer"
-    description: "Analyze test failures and identify root causes"
-  - name: "Command Syntax Validator"
-    description: "Validate and correct command syntax"
+  - name: "File operations"
+    description: "Read test execution results and write correction reports"
+  - name: "WebFetch"
+    description: "Fetch additional context if needed"
 
 configuration:
   dynamic_variables:
