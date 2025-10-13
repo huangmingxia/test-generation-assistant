@@ -1,0 +1,31 @@
+# Claude AI Assistant
+.claude/*
+!.claude/commands/
+.claude-ai/
+
+# Environment variables
+.env
+.env.local
+
+# E2E test code repo
+temp_repos/
+
+# Test artifacts and outputs
+test_artifacts/
+workflow_outputs/
+
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
