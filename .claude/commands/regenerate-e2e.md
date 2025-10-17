@@ -1,32 +1,75 @@
-# Regenerate E2E Test Code
+---
+description: Regenerate E2E test code (skip prerequisite checks, force regeneration)
+argument-hint: [JIRA_KEY]
+---
 
-Regenerate E2E test code (skip prerequisite checks, force regeneration).
+## Name
+regenerate-e2e
 
-## Usage
+## Synopsis
 ```
-/regenerate-e2e HIVE-2883
-/regenerate-e2e CCO-1234
+/regenerate-e2e JIRA_KEY
 ```
 
-## What this command does
+## Description
+The `regenerate-e2e` command regenerates E2E test code, **skipping all prerequisite checks** and **forcing regeneration** even if E2E code already exists.
 
-Same as `/generate-e2e` but:
-- **SKIPS** prerequisite check (test case existence)
-- **FORCES** E2E code regeneration
+This is the regeneration variant of `/generate-e2e-case`.
+
+## Implementation
+Same as `generate-e2e-case` but with regeneration mode enabled:
+- **SKIPS** all prerequisite checks
+- **FORCES** regeneration even if E2E code exists
 - **OVERWRITES** existing E2E test files
 
-## When to use
-- Fix issues in existing E2E code
-- Update E2E code based on new implementation
-- Regenerate after code review feedback
+Executes the e2e_test_generation_openshift_private agent at `config/agents/e2e_test_generation_openshift_private.md`
 
-## Example
+## Return Value
+- **Success**: Regenerated E2E test code in `temp_repos/openshift-tests-private/`
+- **Failure**: Error message indicating which step failed
+
+## Examples
+
+1. **Basic usage**:
+   ```
+   /regenerate-e2e HIVE-2883
+   ```
+
+2. **For different component**:
+   ```
+   /regenerate-e2e CCO-1234
+   ```
+
+## Arguments
+- **$1** (required): JIRA issue key (e.g., HIVE-2883, CCO-1234)
+
+## When to Use
+- Fix issues in existing E2E code
+- Update E2E test based on new requirements
+- Regenerate after test case updates
+- Force complete regeneration
+
+## Behavior Difference
+| Aspect | `/generate-e2e-case` | `/regenerate-e2e` |
+|--------|---------------------|------------------|
+| Prerequisite check | ✅ Yes | ❌ No (skip) |
+| Overwrite existing | ❌ No (skip if exists) | ✅ Yes (force) |
+| Use case | First time generation | Update/fix existing |
+
+## Output Location
 ```
-User: /regenerate-e2e HIVE-2883
-→ Executes e2e_test_generation_openshift_private agent (SKIP prerequisite)
-→ Overwrites existing E2E code
+temp_repos/openshift-tests-private/
+└── test/extended/{component}/
+    └── {jira_key}_test.go (overwritten)
 ```
+
+Branch: `ai-case-design-{JIRA_KEY}` (recreated if needed)
+
+## See Also
+- `/generate-e2e-case` - Normal E2E code generation
+- `/regenerate-test` - Regenerate test cases
+- `e2e_test_generation_openshift_private.md` - Agent implementation
 
 ---
 
-**REGENERATE MODE**: Skip E2E prerequisite check and force regeneration for: **{args}**
+**REGENERATE MODE**: Skip prerequisite checks and force regeneration for: **{args}**

@@ -8,7 +8,7 @@ full-workflow
 
 ## Synopsis
 ```
-/full-workflow JIRA_KEY
+/test-gen:full-workflow JIRA_KEY
 ```
 
 ## Description
@@ -30,19 +30,19 @@ The orchestrator performs:
 Total execution time: ~3-4 minutes
 
 ## Return Value
-- **Success**: Complete workflow outputs in `test_artifacts/{COMPONENT}/{JIRA_KEY}/`
+- **Success**: Complete workflow outputs in `test_artifacts/{JIRA_KEY}/`
 - **Failure**: Error message indicating which phase failed
 
 ## Examples
 
 1. **Basic usage**:
    ```
-   /full-workflow HIVE-2883
+   /test-gen:full-workflow HIVE-2883
    ```
 
 2. **For different component**:
    ```
-   /full-workflow CCO-1234
+   /test-gen:full-workflow CCO-1234
    ```
 
 ## Arguments
@@ -56,30 +56,26 @@ Total execution time: ~3-4 minutes
 
 ## Output Structure
 ```
-test_artifacts/{COMPONENT}/{JIRA_KEY}/
+test_artifacts/{JIRA_KEY}/
 ├── phases/
 │   ├── test_requirements_output.md
 │   ├── test_strategy.md
 │   └── test_case_design.md
 ├── test_cases/
-│   └── {JIRA_KEY}_test_cases.md
-├── test_coverage_matrix.md
-└── test_report.md (optional)
+│   └── {JIRA_KEY}_test_case.md
+├── test_report.md
+└── e2e_test_info.json
 ```
 
 ## Complete Workflow
 This IS the complete workflow. For step-by-step control:
-1. `/generate-test-case JIRA_KEY`
-2. `/generate-e2e-case JIRA_KEY`
-3. `/run-tests JIRA_KEY`
-4. `/submit-pr JIRA_KEY`
+1. `/test-gen:generate-test JIRA_KEY`
+2. `/test-gen:generate-e2e JIRA_KEY`
+3. `/test-gen:run-tests JIRA_KEY`
+4. `/test-gen:submit-pr JIRA_KEY`
 
 ## See Also
 - `workflow_orchestrator.md` - Orchestrator implementation
-- `/generate-test-case` - Manual test case generation
-- `/generate-e2e-case` - Manual E2E generation
-- `/run-tests` - Manual test execution
-
----
-
-Execute complete test generation workflow for: **{args}**
+- `/test-gen:generate-test` - Manual test case generation
+- `/test-gen:generate-e2e` - Manual E2E generation
+- `/test-gen:run-tests` - Manual test execution

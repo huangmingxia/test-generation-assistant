@@ -1,0 +1,13 @@
+{
+  "name": "test-generation-assistant",
+  "owner": {
+    "name": "huangmingxia"
+  },
+  "plugins": [
+    {
+      "name": "test-gen",
+      "source": "./plugins/test-gen",
+      "description": "AI-assisted test generation and execution system for OpenShift components"
+    }
+  ]
+}

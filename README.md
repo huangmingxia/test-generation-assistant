@@ -22,6 +22,27 @@ Before you can use this test generation system, you need to set up the following
 - **Gemini access**: Refer to [Gemini documentation](https://gemini.google.com/) for AI assistance
 - **Important**: Choose Claude Code for command-line interaction, Cursor for a full IDE experience, or Gemini for alternative AI assistance. All can be used to run the test generation system.
 
+### 1.1 Install as Claude Plugin (Recommended for Teams) ⭐
+
+**ONE-COMMAND INSTALLATION** - The simplest way to share with your team:
+
+```bash
+claude plugin marketplace add YOUR_USERNAME/test-generation-assistant
+```
+
+That's it! The plugin is now available in Claude Code with all agents and workflows.
+
+**What's included:**
+- ✅ All test generation agents
+- ✅ Workflow orchestrator
+- ✅ Configuration templates
+- ✅ Automatic updates
+- ✅ Team collaboration support
+
+**Complete Guide**: [PLUGIN_INSTALLATION.md](PLUGIN_INSTALLATION.md)
+
+---
+
 ### 2. JIRA MCP Access
 - **Apply for jira-mcp-snowflake token**: Refer to [Jira-MCP-Snowflake-Token-Guide](https://docs.google.com/document/d/1pg6TkwezhIahppp5k0md0Zx0CC-4f_RWQHaH9cTl1Mo/edit?tab=t.0#heading=h.xyjdx8nsdjql)
  
@@ -308,4 +329,13 @@ The orchestrator automatically identifies your intent from natural language:
 
 ## 📚 Documentation
 
+### For End Users
+- **[QUICK_START.md](QUICK_START.md)** - Quick start guide for team members
+- **[PLUGIN_INSTALLATION.md](PLUGIN_INSTALLATION.md)** - Detailed installation instructions
+- **[EXAMPLE_USAGE.md](EXAMPLE_USAGE.md)** - Usage examples and best practices
+
+### For Plugin Maintainers
+- **[DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md)** - How to distribute the plugin to your team
 - **[CLAUDE.md](CLAUDE.md)** - Complete agent instructions and execution guide
+- **[WORKFLOW_ORCHESTRATOR_GUIDE.md](WORKFLOW_ORCHESTRATOR_GUIDE.md)** - Workflow orchestrator documentation
+- **[STARTUP_CHECKLIST.md](STARTUP_CHECKLIST.md)** - Startup checklist for agents

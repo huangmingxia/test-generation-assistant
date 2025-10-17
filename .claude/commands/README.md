@@ -1,200 +1,135 @@
-# Slash Commands Guide
+# Slash Commands
 
-## Available Commands
+## Command Reference
+
+All commands follow the format: `/command-name JIRA_KEY`
 
 ### Core Workflow Commands
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/generate-test` | Generate test case from JIRA | `/generate-test HIVE-2883` |
-| `/generate-e2e` | Generate E2E test code | `/generate-e2e HIVE-2883` |
-| `/run-tests` | Execute E2E tests | `/run-tests HIVE-2883` |
-| `/generate-report` | Generate comprehensive test report | `/generate-report HIVE-2883` |
-| `/submit-pr` | Create pull request | `/submit-pr HIVE-2883` |
-| `/full-workflow` | Execute complete workflow | `/full-workflow HIVE-2883` |
+| Command | Description | Duration |
+|---------|-------------|----------|
+| `/generate-test-case` | Generate test cases from JIRA | ~90s |
+| `/generate-e2e-case` | Generate E2E test code | ~120s |
+| `/run-tests` | Execute E2E tests | ~180s |
+| `/generate-report` | Generate comprehensive report | ~45s |
+| `/submit-pr` | Create pull request | ~30s |
+| `/full-workflow` | Execute complete workflow | ~3-4min |
 
 ### Regeneration Commands
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/regenerate-test` | Regenerate test case (force) | `/regenerate-test HIVE-2883` |
-| `/regenerate-e2e` | Regenerate E2E code (force) | `/regenerate-e2e HIVE-2883` |
+| Command | Description |
+|---------|-------------|
+| `/regenerate-test` | Force regenerate test case |
+| `/regenerate-e2e` | Force regenerate E2E code |
 
-## Command vs Agent Relationship
+## Command Flow
 
 ```
-┌─────────────────────┐
-│  Slash Command      │  ← User types this
-│  /generate-test     │
-└──────────┬──────────┘
-           │
-           ↓
-┌─────────────────────┐
-│  Agent Config       │  ← Claude reads this
-│  test_case_         │
-│  generation.yaml    │
-└──────────┬──────────┘
-           │
-           ↓
-┌─────────────────────┐
-│  Agent Execution    │  ← Claude executes steps
-│  Step 1, 2, 3...    │
-└─────────────────────┘
+/generate-test-case  →  /generate-e2e-case  →  /run-tests  →  /submit-pr
+      (90s)                    (120s)             (180s)          (30s)
+                                    ↓
+                         /generate-report
+                              (45s)
+                                    
+Complete workflow: /full-workflow (combines first 3 steps)
 ```
 
-## How Slash Commands Work
+## Quick Start
 
-### 1. User Interface Layer (Slash Command)
-- **File**: `.claude/commands/generate-test.md`
-- **Purpose**: User-friendly entry point
-- **Contains**:
-  - Usage instructions
-  - Argument parsing
-  - Execution prompt
-
-### 2. Logic Layer (Agent)
-- **File**: `config/agents/test_case_generation.yaml`
-- **Purpose**: Execution logic and steps
-- **Contains**:
-  - Step-by-step tasks
-  - Tool configurations
-  - Input/output specifications
-
-### 3. Execution Flow
-
+### Complete Workflow (Recommended)
 ```bash
-# User types
-/generate-test HIVE-2883
-
-# Claude Code processes
-1. Reads .claude/commands/generate-test.md
-2. Extracts argument: HIVE-2883
-3. Reads config/agents/test_case_generation.yaml
-4. Executes each step in agent config
-5. Returns results to user
+/full-workflow HIVE-2883
 ```
 
-## Creating Your Own Slash Command
+### Step-by-Step Workflow
+```bash
+# Step 1: Generate test cases
+/generate-test-case HIVE-2883
 
-### Template Structure
+# Step 2: Generate E2E code  
+/generate-e2e-case HIVE-2883
 
-```markdown
-# Command Title
+# Step 3: Run tests
+/run-tests HIVE-2883
 
-Brief description of what this command does.
+# Step 4: Generate report (optional)
+/generate-report HIVE-2883
 
-## Usage
-\`\`\`
-/your-command ARG1 ARG2
-\`\`\`
-
-## What this command does
-1. Step 1 description
-2. Step 2 description
-3. ...
-
-## Arguments
-- `$1` (required): Description
-- `$2` (optional): Description
-
-## Example
-\`\`\`
-User: /your-command value1 value2
-→ Expected behavior
-→ Output description
-\`\`\`
-
----
-
-Execute {agent_name} agent for: **{args}**
+# Step 5: Submit PR
+/submit-pr HIVE-2883
 ```
 
-### Key Components
+### Regeneration
+```bash
+# Force regenerate test case
+/regenerate-test HIVE-2883
 
-1. **Header**: Clear command name and description
-2. **Usage**: Show command syntax
-3. **What it does**: High-level workflow
-4. **Arguments**: Define required/optional params
-5. **Example**: Show concrete usage
-6. **Footer**: Execution prompt (critical!)
-
-### The Footer Pattern
-
-```markdown
----
-
-Execute {agent_name} agent for: **{args}**
+# Force regenerate E2E code
+/regenerate-e2e HIVE-2883
 ```
 
-This footer tells Claude Code:
-- Which agent to load (`{agent_name}`)
-- What arguments to pass (`{args}`)
+## Prerequisites
 
-## Best Practices
+### Required Tools
+- JIRA MCP configured and accessible
+- GitHub CLI (`gh`) installed and authenticated
+- OpenShift cluster kubeconfig available
+- Fork of openshift-tests-private configured
 
-### DO ✅
-- Keep commands simple and focused
-- Document all arguments clearly
-- Provide concrete examples
-- Link to agent configuration
-- Use consistent naming patterns
+### Environment Setup
+Ensure your environment meets the requirements listed in each command's documentation.
 
-### DON'T ❌
-- Create commands without corresponding agents
-- Mix multiple agents in one command
-- Skip argument documentation
-- Forget the execution footer
+## Output Structure
 
-## Common Patterns
+All artifacts are generated in `test_artifacts/{COMPONENT}/{JIRA_KEY}/`:
 
-### Pattern 1: Simple Agent Execution
-```markdown
-Execute test_case_generation agent for: **{args}**
+```
+test_artifacts/hive/HIVE-2883/
+├── phases/
+│   ├── test_requirements_output.md
+│   ├── test_strategy.md
+│   └── comprehensive_test_results.md
+├── test_cases/
+│   └── HIVE-2883_test_cases.md
+├── test_coverage_matrix.md
+└── test_report.md
 ```
 
-### Pattern 2: Conditional Execution
-```markdown
-Check prerequisites, then execute e2e_generation agent for: **{args}**
+E2E code is generated in `temp_repos/openshift-tests-private/`:
+
+```
+temp_repos/openshift-tests-private/
+└── test/extended/hive/
+    └── hive_2883_test.go
 ```
 
-### Pattern 3: Sequential Workflow
-```markdown
-Execute workflow: test_case_generation → e2e_generation → test-executor for: **{args}**
-```
+## Command Details
 
-## Troubleshooting
+Each command is documented with:
+- **Name**: Command identifier
+- **Synopsis**: Usage syntax
+- **Description**: What the command does
+- **Implementation**: Which agent it executes
+- **Return Value**: Success/failure outputs
+- **Examples**: Usage examples
+- **Arguments**: Required parameters
+- **Prerequisites**: Dependencies
+- **See Also**: Related commands
 
-### Command not found
-- Check file exists in `.claude/commands/`
-- Verify file has `.md` extension
-- Ensure file name matches command (e.g., `generate-test.md` → `/generate-test`)
+Use `/command-name` to access detailed documentation for each command.
 
-### Command doesn't execute correctly
-- Verify agent config exists
-- Check execution footer format
-- Ensure argument parsing is correct
+## Workflow Orchestrator
 
-### Agent not loading
-- Verify agent path in `config/agents/`
-- Check agent YAML is valid
-- Ensure agent name in command matches file name
-
-## Advanced: Multi-Step Commands
-
-For complex workflows, use sequential agent calls:
-
-```markdown
-Execute complete workflow for: **{args}**
-
-MANDATORY steps:
-1. Read config/agents/workflow_orchestrator.yaml
-2. Load test_case_generation agent
-3. Execute all 4 phases
-4. Verify outputs before proceeding
-```
+The workflow orchestrator (`config/agents/workflow_orchestrator.md`) manages:
+- Trigger keyword matching
+- Prerequisite validation
+- Agent execution sequencing
+- Error handling and recovery
 
 ## Related Documentation
 
-- Agent configurations: [config/agents/](../../config/agents/)
-- Workflow guide: [prompts/workflow_guide.md](../../prompts/workflow_guide.md)
-- Execution checklist: [prompts/check_list.md](../../prompts/check_list.md)
+- **Agent Configurations**: `config/agents/`
+- **Rules**: `config/rules/`
+- **Templates**: `config/templates/`
+- **Workflow Guide**: `WORKFLOW_ORCHESTRATOR_GUIDE.md`
+- **Startup Checklist**: `STARTUP_CHECKLIST.md`
